@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Amizades - Fazenda São Bento</title>
+    <style>
+        body { 
+            background: #030404; 
+            color: #e8eaed; 
+            padding: 30px; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+        h1 { 
+            color: #b31010; 
+            margin-bottom: 10px; 
+        }
+        .section { 
+            background: #0e1012; 
+            padding: 25px; 
+            border-radius: 8px; 
+            margin-bottom: 30px; 
+        }
+        form { 
+            margin-bottom: 20px; 
+        }
+        input { 
+            padding: 12px; 
+            width: 320px; 
+            background: #121416; 
+            border: 1px solid #2d0b0b; 
+            color: white; 
+            border-radius: 6px; 
+            font-size: 14px; 
+        }
+        button { 
+            background: #b31010; 
+            color: white; 
+            padding: 12px 22px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin-left: 10px; 
+        }
+        button:hover {
+            background: #d91414;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+        th, td { 
+            padding: 14px; 
+            border: 1px solid #2d0b0b; 
+            text-align: left; 
+        }
+        th { 
+            background: #121416; 
+            color: #80868b; 
+            font-weight: bold; 
+        }
+        .empty { 
+            color: #80868b; 
+            font-style: italic; 
+        }
+        .btn-red {
+            background: #c62828;
+        }
+        .btn-red:hover {
+            background: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👥 Amizades</h1>
+        <a href="/" style="color:#b31010; text-decoration:none;">← Voltar para a Loja</a>
+
+        <!-- Adicionar Amigo -->
+        <div class="section">
+            <h3>Adicionar Amigo por ID</h3>
+            <form action="/enviar_pedido_amizade" method="POST">
+                <input type="text" name="amigo_id" placeholder="Ex: FSB-0007" required>
+                <button type="submit">Enviar Pedido de Amizade</button>
+            </form>
+        </div>
+
+        <!-- Pedidos Pendentes -->
+        <div class="section">
+            <h3>📩 Pedidos de Amizade Pendentes</h3>
+            {% if pedidos_pendentes %}
+                <table>
+                    <tr>
+                        <th>Nome</th>
+                        <th>ID</th>
+                        <th>Ação</th>
+                    </tr>
+                    {% for p in pedidos_pendentes %}
+                    <tr>
+                        <td>{{ p.nome }}</td>
+                        <td>{{ p.codigo_aluno }}</td>
+                        <td>
+                            <form action="/aceitar_amizade/{{ p.id }}" method="POST" style="display:inline;">
+                                <button type="submit">✅ Aceitar</button>
+                            </form>
+                            <form action="/recusar_amizade/{{ p.id }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn-red">❌ Recusar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p class="empty">Você não tem pedidos de amizade pendentes.</p>
+            {% endif %}
+        </div>
+
+        <!-- Meus Amigos -->
+        <div class="section">
+            <h3>✅ Meus Amigos</h3>
+            {% if amigos %}
+                <table>
+                    <tr>
+                        <th>Nome</th>
+                        <th>ID</th>
+                        <th>Série</th>
+                    </tr>
+                    {% for amigo in amigos %}
+                    <tr>
+                        <td>{{ amigo.nome }}</td>
+                        <td>{{ amigo.codigo_aluno }}</td>
+                        <td>{{ amigo.serie }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p class="empty">Você ainda não tem amigos adicionados.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

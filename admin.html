@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Admin - Fazenda São Bento</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #030404; color: #e8eaed; display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar { width: 220px; background-color: #000000; padding: 25px 15px; display: flex; flex-direction: column; border-right: 1px solid #111315; flex-shrink: 0; }
+        .logo-area { display: flex; align-items: center; gap: 10px; margin-bottom: 35px; }
+        .logo-icon { width: 35px; height: 35px; background-color: #b31010; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+        .logo-text h3 { font-size: 13px; color: #fff; text-transform: uppercase; line-height: 1.2; }
+        .logo-text span { font-size: 11px; color: #b31010; font-weight: bold; }
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 6px; height: 100%; }
+        .nav-item { padding: 10px 12px; border-radius: 6px; color: #80868b; font-size: 14px; text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .nav-item.active { background-color: #b31010; color: #fff; font-weight: bold; }
+        .nav-item.sair { margin-top: auto; color: #c62828; font-weight: bold; }
+        
+        .main-container { flex: 1; display: flex; flex-direction: column; background-color: #0b0c0d; height: 100vh; overflow: hidden; }
+        .topbar { height: 75px; background-color: #050607; border-bottom: 1px solid #111315; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; flex-shrink: 0; }
+        .topbar-left h2 { font-size: 18px; color: #fff; }
+        .topbar-left p { color: #80868b; font-size: 12px; margin-top: 3px; }
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        .admin-badge { background-color: #b31010; color: white; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        
+        .content { flex: 1; padding: 30px; overflow-y: auto; }
+        
+        .add-product-btn {
+            display: inline-block;
+            background-color: #b31010;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(179, 16, 16, 0.3);
+            transition: all 0.3s ease;
+        }
+        .add-product-btn:hover {
+            background-color: #d91414;
+            transform: translateY(-2px);
+        }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background-color: #0e1012; border: 1px solid #181a1f; border-radius: 6px; padding: 20px; text-align: center; }
+        .stat-number { font-size: 28px; font-weight: bold; color: #b31010; margin-bottom: 8px; }
+        .stat-label { font-size: 12px; color: #80868b; }
+        
+        .table-container { background-color: #0e1012; border: 1px solid #181a1f; border-radius: 6px; overflow: hidden; }
+        .table-header { background-color: #121416; padding: 15px 20px; border-bottom: 1px solid #181a1f; }
+        .table-header h3 { font-size: 14px; color: #fff; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #121416; padding: 15px 20px; text-align: left; font-size: 12px; color: #80868b; font-weight: bold; border-bottom: 1px solid #181a1f; }
+        td { padding: 15px 20px; border-bottom: 1px solid #1c1e22; font-size: 13px; }
+        tr:hover { background-color: #151719; }
+        
+        .status-entregue { color: #4ade80; font-weight: bold; }
+        .status-pendente { color: #f59e0b; font-weight: bold; }
+        
+        .produto-cell { color: #fff; font-weight: bold; }
+        .preco-cell { color: #b31010; font-weight: bold; }
+        
+        .btn-comprovante { background-color: #1c1e22; border: 1px solid #3a3d42; color: #4ade80; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-comprovante:hover { background-color: #282a2d; }
+        
+        .btn-entregar { background-color: #b31010; border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-entregar:hover { background-color: #d91414; }
+        .btn-entregar:disabled { background-color: #4e5256; cursor: not-allowed; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background-color: #0e1012; border: 1px solid #2d0b0b; padding: 30px; border-radius: 10px; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #80868b; font-size: 28px; font-weight: bold; }
+        .modal-title { font-size: 16px; color: #fff; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #2d0b0b; padding-bottom: 15px; }
+        .comprovante-img { width: 100%; max-width: 500px; border: 1px solid #2d0b0b; border-radius: 6px; margin-bottom: 15px; }
+        
+        .no-data { text-align: center; padding: 50px 20px; color: #80868b; }
+        
+        .footer-credits { text-align: center; color: #4e5256; font-size: 11px; padding: 15px; background-color: #050607; border-top: 1px solid #111315; }
+    </style>
+</head>
+<body>
+
+    <!-- Menu Lateral -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">🚨</div>
+            <div class="logo-text">
+                <h3>Fazenda</h3>
+                <span>SÃO BENTO</span>
+            </div>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="/" class="nav-item">🛒 Loja</a>
+            <a href="/admin" class="nav-item active" style="color:#f59e0b;font-weight:bold;">🚨 Painel Admin</a>
+            <a href="/sair" class="nav-item sair">🚪 Sair da Conta</a>
+        </div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="main-container">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h2>Painel de Administração</h2>
+                <p>Gerenciar pedidos e histórico de compras</p>
+            </div>
+            <div class="topbar-right">
+                <div class="admin-badge">⚡ ADMINISTRADOR</div>
+            </div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="content">
+            
+            <!-- BOTÃO DE ADICIONAR PRODUTO -->
+            <a href="/admin/produtos" class="add-product-btn">
+                ➕ Adicionar Novo Produto
+            </a>
+
+            {% if pedidos %}
+            
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ pedidos|length }}</div>
+                    <div class="stat-label">Total de Pedidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">
+                        {% set entregues = pedidos|selectattr('entregue', 'equalto', 1)|list|length %}
+                        {{ entregues }}
+                    </div>
+                    <div class="stat-label">Entregues</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">
+                        {% set pendentes = pedidos|selectattr('entregue', 'equalto', 0)|list|length %}
+                        {{ pendentes }}
+                    </div>
+                    <div class="stat-label">Pendentes</div>
+                </div>
+            </div>
+
+            <!-- Tabela de Pedidos -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>📋 Histórico de Pedidos</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>Produto</th>
+                            <th>Valor</th>
+                            <th>Aluno / Série</th>
+                            <th>Pagamento</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pedido in pedidos %}
+                        <tr>
+                            <td>#{{ pedido['id'] }}</td>
+                            <td class="produto-cell">{{ pedido['produto_nome'] }}</td>
+                            <td class="preco-cell">R$ {{ "%.2f"|format(pedido['produto_preco']) }}</td>
+                            <td>
+                                <strong>{{ pedido['nome_aluno'] }}</strong><br>
+                                <span style="font-size:11px; color:#80868b;">{{ pedido['serie'] }} - Sala {{ pedido['sala'] }}</span>
+                            </td>
+                            <td>
+                                {% if pedido['forma_pagamento'] == 'PIX' %}
+                                    📱 PIX
+                                {% else %}
+                                    💵 Dinheiro
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 11px; color: #80868b;">
+                                {{ pedido['data_pedido'][:10] }}<br>
+                                {{ pedido['data_pedido'][11:16] }}
+                            </td>
+                            <td>
+                                {% if pedido['entregue'] == 1 %}
+                                    <span class="status-entregue">✅ Entregue</span>
+                                {% else %}
+                                    <span class="status-pendente">⏳ Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if pedido['comprovante'] %}
+                                    <button class="btn-comprovante" onclick="abrirComprovante('{{ pedido['comprovante'] }}', '{{ pedido['produto_nome'] }}')">🖼️ Ver</button>
+                                {% endif %}
+                                
+                                {% if pedido['entregue'] == 0 %}
+                                    <form method="POST" action="/entregar/{{ pedido['id'] }}" style="display:inline;">
+                                        <button type="submit" class="btn-entregar">Marcar Entregue</button>
+                                    </form>
+                                {% else %}
+                                    <button class="btn-entregar" disabled>✅ Entregue</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <div class="no-data">
+                <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
+                <p>Nenhum pedido registrado ainda.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer-credits">
+            © 2026 Fazenda São Bento. Painel Administrativo.
+        </div>
+    </div>
+
+    <!-- Modal Comprovante -->
+    <div id="modalComprovante" class="modal-overlay">
+        <div class="modal-box">
+            <span class="modal-close" onclick="fecharComprovante()">&times;</span>
+            <div class="modal-title">Comprovante de Pagamento</div>
+            <div style="margin-bottom: 15px; color: #80868b; font-size: 12px;">
+                Produto: <strong id="titulo-comprovante" style="color: #fff;"></strong>
+            </div>
+            <img id="imagemComprovante" class="comprovante-img" alt="Comprovante">
+        </div>
+    </div>
+
+    <script>
+        function abrirComprovante(nomeArquivo, nomeProduto) {
+            document.getElementById('titulo-comprovante').innerText = nomeProduto;
+            document.getElementById('imagemComprovante').src = '/static/uploads/' + nomeArquivo;
+            document.getElementById('modalComprovante').style.display = 'flex';
+        }
+
+        function fecharComprovante() {
+            document.getElementById('modalComprovante').style.display = 'none';
+        }
+
+        document.getElementById('modalComprovante').addEventListener('click', function(e) {
+            if (e.target === this) fecharComprovante();
+        });
+    </script>
+
+</body>
+</html>

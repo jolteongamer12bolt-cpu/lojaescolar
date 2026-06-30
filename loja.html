@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja Escolar - Fazenda São Bento</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #030404; color: #e8eaed; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 220px; background-color: #000000; padding: 25px 15px; display: flex; flex-direction: column; border-right: 1px solid #111315; flex-shrink: 0; }
+        .logo-area { display: flex; align-items: center; gap: 10px; margin-bottom: 35px; }
+        .logo-icon { width: 35px; height: 35px; background-color: #b31010; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+        .logo-text h3 { font-size: 13px; color: #fff; text-transform: uppercase; line-height: 1.2; }
+        .logo-text span { font-size: 11px; color: #b31010; font-weight: bold; }
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 6px; height: 100%; }
+        .nav-item { padding: 10px 12px; border-radius: 6px; color: #80868b; font-size: 14px; text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .nav-item.active { background-color: #b31010; color: #fff; font-weight: bold; }
+        .nav-item.sair { margin-top: auto; color: #c62828; font-weight: bold; }
+        .main-container { flex: 1; display: flex; flex-direction: column; background-color: #0b0c0d; height: 100vh; overflow: hidden; }
+        .topbar { height: 75px; background-color: #050607; border-bottom: 1px solid #111315; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; flex-shrink: 0; }
+        .topbar-left h2 { font-size: 18px; color: #fff; }
+        .topbar-right { display: flex; align-items: center; gap: 20px; }
+        .user-status-card { display: flex; align-items: center; gap: 10px; }
+        .avatar-circle { width: 32px; height: 32px; background-color: #202124; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #80868b; }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .content-layout { flex: 1; display: flex; padding: 25px 30px; gap: 25px; overflow-y: auto; }
+        .center-content { flex: 3; display: flex; flex-direction: column; gap: 25px; }
+        .right-content { flex: 1.2; display: flex; flex-direction: column; gap: 20px; min-width: 280px; }
+        .category-tabs { display: flex; gap: 10px; margin-bottom: 5px; }
+        .tab-item { background-color: #0e1012; border: 1px solid #181a1f; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; color: #80868b; }
+        .tab-item.active { background-color: #b31010; color: white; border-color: #b31010; }
+        .welcome-banner { background: linear-gradient(135deg, #190505 0%, #0c0d0e 100%); border: 1px solid #2d0b0b; border-radius: 10px; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .welcome-text h1 { font-size: 22px; color: #fff; }
+        .welcome-text h2 { font-size: 20px; color: #b31010; margin: 4px 0 12px 0; }
+        .cart-art { width: 110px; opacity: 0.85; cursor: pointer; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+        .product-card { background-color: #0e1012; border: 1px solid #181a1f; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .product-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 12px; }
+        .product-price { color: #b31010; font-weight: bold; font-size: 14px; margin-bottom: 12px; }
+        .btn-buy { width: 100%; background-color: #b31010; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .btn-buy:hover { background-color: #d91414; }
+        .panel { background-color: #0e1012; border: 1px solid #181a1f; border-radius: 6px; padding: 20px; }
+        .panel h3 { font-size: 15px; color: #fff; margin-bottom: 12px; text-align: center; }
+        .form-group { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 11px; color: #80868b; font-weight: bold; }
+        .form-control { background-color: #121416; border: 1px solid #1c1e22; border-radius: 4px; padding: 8px; color: white; font-size: 12px; outline: none; }
+        .form-control:focus { border-color: #b31010; }
+        .btn-submit { width: 100%; background-color: #b31010; color: white; border: none; padding: 9px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: 5px; }
+        .btn-submit:hover { background-color: #d91414; }
+        .toggle-link { font-size: 11px; color: #80868b; text-align: center; display: block; margin-top: 12px; text-decoration: none; cursor: pointer; }
+        .toggle-link:hover { color: #b31010; }
+        .profile-box { text-align: center; }
+        .big-avatar { width: 65px; height: 65px; background-color: #202124; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; color: #80868b; border: 2px solid #b31010; }
+        .big-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .footer-credits { text-align: center; color: #4e5256; font-size: 11px; padding: 15px; background-color: #050607; border-top: 1px solid #111315; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background-color: #0e1012; border: 1px solid #2d0b0b; width: 100%; max-width: 480px; padding: 28px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.8); position: relative; }
+        .modal-header { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 20px; text-transform: uppercase; border-bottom: 1px solid #2d0b0b; padding-bottom: 12px; text-align: center; }
+        .modal-step { display: none; flex-direction: column; gap: 16px; }
+        .modal-step.active { display: flex; }
+        .btn-modal { padding: 14px; background-color: #b31010; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; text-align: center; font-size: 15px; }
+        .btn-modal:hover { background-color: #d91414; }
+        .btn-secondary { background-color: #1c1e22; border: 1px solid #3a3d42; color: #e8eaed; }
+        .btn-secondary:hover { background-color: #282a2d; }
+        .close-modal { position: absolute; top: 18px; right: 22px; cursor: pointer; color: #80868b; font-size: 22px; font-weight: bold; }
+        .payment-options { display: flex; gap: 15px; margin-top: 10px; }
+        .payment-btn { flex: 1; padding: 18px; background-color: #121416; border: 2px solid #2d0b0b; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .payment-btn:hover { border-color: #b31010; background-color: #1a1c20; }
+        .pix-key-box { background-color: #121416; padding: 15px; border-radius: 6px; border: 1px dashed #b31010; word-break: break-all; font-family: monospace; font-size: 13px; color: #b3b3b3; }
+        .copy-btn { background-color: #1c1e22; color: #fff; border: 1px solid #3a3d42; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 8px; }
+        .copy-btn:hover { background-color: #282a2d; }
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+        .turno-options { display: flex; gap: 12px; }
+        .turno-btn { flex: 1; padding: 12px; background-color: #121416; border: 2px solid #2d0b0b; border-radius: 6px; color: #fff; text-align: center; cursor: pointer; font-weight: bold; }
+        .turno-btn.active { border-color: #b31010; background-color: #1f2228; }
+        .success-box { text-align: center; padding: 20px 10px; }
+        .success-box .check { font-size: 60px; color: #4ade80; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Menu Lateral -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">🚨</div>
+            <div class="logo-text">
+                <h3>Fazenda</h3>
+                <span>SÃO BENTO</span>
+            </div>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="/" class="nav-item active">🛒 Loja</a>
+
+            {% if is_admin %}
+            <a href="/admin" class="nav-item" style="color:#f59e0b; font-weight:bold;">
+                🚨 Área Admin
+            </a>
+            {% endif %}
+
+            <!-- Botão Meu Perfil -->
+            <a href="/perfil" class="nav-item">
+                👤 Meu Perfil
+            </a>
+
+            <!-- Botão Amizades -->
+            <a href="/amizades" class="nav-item">
+                👥 Amizades
+            </a>
+
+            {{ menu_sair | safe }}
+        </div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="main-container">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h2>Loja</h2>
+                <span style="color: #80868b; font-size: 12px;">Confira os itens disponíveis</span>
+            </div>
+            <div class="topbar-right">
+                <div class="user-status-card">
+                    <div class="avatar-circle">
+                        {{ usuario_avatar | safe }}
+                    </div>
+                    <div class="user-info-text">
+                        <h4>{{ usuario_nome }}</h4>
+                        <p>{{ usuario_status }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Central -->
+        <div class="content-layout">
+            <div class="center-content">
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h1>Bem-vindo à Loja</h1>
+                        <h2>Fazenda São Bento</h2>
+                        <p style="color: #80868b; font-size: 13px;">Aqui você encontra lanches, materiais e muito mais.</p>
+                    </div>
+                    <img class="cart-art" src="https://via.placeholder.com/110x80/1a1a1a/b31010?text=Carrinho" alt="Carrinho" onclick="alert('Pedidos salvos no banco de dados! 🎉')">
+                </div>
+
+                <div>
+                    <div class="category-tabs">
+                        <div class="tab-item active">🍔 Lanches</div>
+                        <div class="tab-item" onclick="alert('Categoria Contas de Jogos em breve!')">🎮 Contas de Jogos</div>
+                    </div>
+                    
+                    <div class="products-grid">
+                        {{ lista_produtos | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-content">
+                {{ painel_cadastro_login | safe }}
+
+                <div class="panel">
+                    <div style="color: #b31010; font-weight: bold; font-size: 13px; margin-bottom: 5px;">🤖 Help Chatbot</div>
+                    {{ lista_chatbot | safe }}
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-credits">
+            © 2026 Fazenda São Bento. Todos os direitos reservados.
+        </div>
+    </div>
+
+    <!-- MODAL COMPLETO (igual ao original) -->
+    <div id="modalCompra" class="modal-overlay">
+        <div class="modal-box">
+            <span class="close-modal" onclick="fecharModal()">&times;</span>
+            <div class="modal-header" id="modal-titulo">Finalizar Compra</div>
+
+            <!-- PASSO 1 -->
+            <div id="step1" class="modal-step active">
+                <div style="text-align:center; margin-bottom:15px;">
+                    <h3 style="color:#fff; font-size:18px;" id="produto-nome-step1"></h3>
+                    <p style="color:#b31010; font-size:20px; font-weight:bold;" id="produto-preco-step1"></p>
+                </div>
+                <p style="text-align:center; color:#80868b; margin-bottom:15px; font-weight:bold;">Formas de pagamento</p>
+                <div class="payment-options">
+                    <div onclick="escolherPagamento('PIX')" class="payment-btn">
+                        <div style="font-size:28px; margin-bottom:8px;">📱</div>
+                        <div><strong>PIX</strong></div>
+                    </div>
+                    <div onclick="escolherPagamento('Dinheiro')" class="payment-btn">
+                        <div style="font-size:28px; margin-bottom:8px;">💵</div>
+                        <div><strong>Dinheiro Físico</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASSO PIX -->
+            <div id="step2-pix" class="modal-step">
+                <p style="text-align:center; color:#80868b; margin-bottom:10px;">Pagamento via PIX</p>
+                <div class="pix-key-box">00020126580014br.gov.bcb.pix0136c1764c04-d5b0-4fc5-82e6-3f2733b7568b52040000530398654047.005802BR5925DAVI GABRIEL BARRETO DOS 6009SAO PAULO62120508Obrigado6304164E</div>
+                <button onclick="copiarPix()" class="copy-btn">📋 Copiar Chave PIX</button>
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Comprovante de Pagamento (obrigatório)</label>
+                    <input type="file" id="comprovante" class="form-control" accept="image/*" required>
+                </div>
+                <button onclick="irParaEntrega()" class="btn-modal" style="margin-top:10px;">Continuar para Entrega →</button>
+                <button onclick="voltarStep1()" class="btn-modal btn-secondary">Voltar</button>
+            </div>
+
+            <!-- PASSO DINHEIRO -->
+            <div id="step2-dinheiro" class="modal-step">
+                <div style="text-align:center; padding:20px 0;">
+                    <div style="font-size:50px; margin-bottom:10px;">💵</div>
+                    <p style="color:#4ade80; font-weight:bold;">Pagamento em Dinheiro Físico</p>
+                    <p style="color:#80868b; font-size:12px; margin-top:10px;">Você entregará o dinheiro no ato da entrega do produto.</p>
+                </div>
+                <button onclick="irParaEntrega()" class="btn-modal">Continuar para Entrega →</button>
+                <button onclick="voltarStep1()" class="btn-modal btn-secondary">Voltar</button>
+            </div>
+
+            <!-- PASSO ENTREGA -->
+            <div id="step3-entrega" class="modal-step">
+                <p style="text-align:center; color:#80868b; margin-bottom:15px; font-weight:bold;">Informações de Entrega - Fazenda São Bento</p>
+                <div class="form-group">
+                    <label>Nome do Aluno</label>
+                    <input type="text" id="nome-aluno" class="form-control" placeholder="Seu nome completo" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Série</label>
+                        <input type="text" id="serie" class="form-control" placeholder="Ex: 2º Ano" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sala</label>
+                        <input type="text" id="sala" class="form-control" placeholder="Ex: Sala 5" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Turno</label>
+                    <div class="turno-options">
+                        <div onclick="escolherTurno('Manhã')" id="turno-manha" class="turno-btn">☀️ Manhã</div>
+                        <div onclick="escolherTurno('Tarde')" id="turno-tarde" class="turno-btn">🌙 Tarde</div>
+                    </div>
+                </div>
+                <button onclick="irParaConfirmacao()" class="btn-modal" style="margin-top:10px;">Revisar Pedido →</button>
+                <button onclick="voltarPagamento()" class="btn-modal btn-secondary">Voltar</button>
+            </div>
+
+            <!-- PASSO CONFIRMAÇÃO -->
+            <div id="step4-confirmacao" class="modal-step">
+                <div style="background:#121416; padding:15px; border-radius:6px; margin-bottom:15px; font-size:14px;">
+                    <p><strong>Produto:</strong> <span id="resumo-produto"></span></p>
+                    <p><strong>Valor:</strong> <span id="resumo-preco" style="color:#b31010; font-weight:bold;"></span></p>
+                    <p><strong>Pagamento:</strong> <span id="resumo-pagamento"></span></p>
+                    <hr style="border-color:#2d0b0b; margin:10px 0;">
+                    <p><strong>Entrega:</strong> <span id="resumo-nome"></span> - <span id="resumo-serie"></span> - Sala <span id="resumo-sala"></span> - <span id="resumo-turno"></span></p>
+                </div>
+                <button onclick="confirmarPedidoFinal()" class="btn-modal">✅ Confirmar e Finalizar Pedido</button>
+                <button onclick="voltarEntrega()" class="btn-modal btn-secondary">Voltar</button>
+            </div>
+
+            <!-- PASSO SUCESSO -->
+            <div id="step5-sucesso" class="modal-step">
+                <div class="success-box">
+                    <div class="check">✅</div>
+                    <h3 style="color:#4ade80; margin-bottom:10px;">Pedido realizado com sucesso!</h3>
+                    <p style="color:#80868b; font-size:14px;" id="mensagem-sucesso"></p>
+                </div>
+                <button onclick="fecharModal()" class="btn-modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pedidoAtual = {};
+        let turnoSelecionado = '';
+        const CHAVE_PIX = "00020126580014br.gov.bcb.pix0136c1764c04-d5b0-4fc5-82e6-3f2733b7568b52040000530398654047.005802BR5925DAVI GABRIEL BARRETO DOS 6009SAO PAULO62120508Obrigado6304164E";
+
+        function iniciarCompra(id, nome, preco) {
+            pedidoAtual = { id: id, nome: nome, preco: preco };
+            document.getElementById('produto-nome-step1').innerText = nome;
+            document.getElementById('produto-preco-step1').innerText = 'R$ ' + preco;
+            mostrarStep('step1');
+            document.getElementById('modal-titulo').innerText = 'Finalizar Compra';
+            document.getElementById('modalCompra').style.display = 'flex';
+            
+            const nomeInput = document.getElementById('nome-aluno');
+            const serieInput = document.getElementById('serie');
+            if (nomeInput) nomeInput.value = "{{ usuario_nome }}";
+            if (serieInput) serieInput.value = "{{ usuario_status }}";
+        }
+
+        function mostrarStep(stepId) {
+            document.querySelectorAll('.modal-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        function escolherPagamento(tipo) {
+            pedidoAtual.forma_pagamento = tipo;
+            if (tipo === 'PIX') {
+                mostrarStep('step2-pix');
+                document.getElementById('modal-titulo').innerText = 'Pagamento via PIX';
+            } else {
+                mostrarStep('step2-dinheiro');
+                document.getElementById('modal-titulo').innerText = 'Pagamento em Dinheiro';
+            }
+        }
+
+        function copiarPix() {
+            navigator.clipboard.writeText(CHAVE_PIX).then(() => {
+                alert('Chave PIX copiada! 📋');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = CHAVE_PIX;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Chave PIX copiada! 📋');
+            });
+        }
+
+        function irParaEntrega() {
+            if (pedidoAtual.forma_pagamento === 'PIX') {
+                const fileInput = document.getElementById('comprovante');
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Por favor, envie a foto do comprovante do PIX!');
+                    return;
+                }
+                pedidoAtual.comprovanteFile = fileInput.files[0];
+            }
+            mostrarStep('step3-entrega');
+            document.getElementById('modal-titulo').innerText = 'Dados de Entrega';
+        }
+
+        function escolherTurno(turno) {
+            turnoSelecionado = turno;
+            document.getElementById('turno-manha').classList.remove('active');
+            document.getElementById('turno-tarde').classList.remove('active');
+            if (turno === 'Manhã') document.getElementById('turno-manha').classList.add('active');
+            else document.getElementById('turno-tarde').classList.add('active');
+        }
+
+        function irParaConfirmacao() {
+            const nome = document.getElementById('nome-aluno').value.trim();
+            const serie = document.getElementById('serie').value.trim();
+            const sala = document.getElementById('sala').value.trim();
+            if (!nome || !serie || !sala || !turnoSelecionado) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            pedidoAtual.nome_aluno = nome;
+            pedidoAtual.serie = serie;
+            pedidoAtual.sala = sala;
+            pedidoAtual.turno = turnoSelecionado;
+
+            document.getElementById('resumo-produto').innerText = pedidoAtual.nome;
+            document.getElementById('resumo-preco').innerText = 'R$ ' + pedidoAtual.preco;
+            document.getElementById('resumo-pagamento').innerText = pedidoAtual.forma_pagamento;
+            document.getElementById('resumo-nome').innerText = nome;
+            document.getElementById('resumo-serie').innerText = serie;
+            document.getElementById('resumo-sala').innerText = sala;
+            document.getElementById('resumo-turno').innerText = turnoSelecionado;
+
+            mostrarStep('step4-confirmacao');
+            document.getElementById('modal-titulo').innerText = 'Confirmar Pedido';
+        }
+
+        function confirmarPedidoFinal() {
+            const formData = new FormData();
+            formData.append('produto_nome', pedidoAtual.nome);
+            formData.append('produto_preco', pedidoAtual.preco);
+            formData.append('forma_pagamento', pedidoAtual.forma_pagamento);
+            formData.append('nome_aluno', pedidoAtual.nome_aluno);
+            formData.append('serie', pedidoAtual.serie);
+            formData.append('sala', pedidoAtual.sala);
+            formData.append('turno', pedidoAtual.turno);
+            if (pedidoAtual.forma_pagamento === 'PIX' && pedidoAtual.comprovanteFile) {
+                formData.append('comprovante', pedidoAtual.comprovanteFile);
+            }
+
+            fetch('/finalizar_pedido', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.sucesso) {
+                    document.getElementById('mensagem-sucesso').innerHTML = 
+                        `Pedido de <strong>${data.resumo.produto}</strong> registrado!<br>
+                         Pagamento: <strong>${data.resumo.pagamento}</strong><br>
+                         Entrega: ${data.resumo.nome} - ${data.resumo.serie} - Sala ${data.resumo.sala} (${data.resumo.turno})`;
+                    mostrarStep('step5-sucesso');
+                    document.getElementById('modal-titulo').innerText = 'Sucesso!';
+                } else {
+                    alert('Erro: ' + data.mensagem);
+                }
+            })
+            .catch(() => alert('Erro ao enviar pedido.'));
+        }
+
+        function voltarStep1() { mostrarStep('step1'); document.getElementById('modal-titulo').innerText = 'Finalizar Compra'; }
+        function voltarPagamento() {
+            if (pedidoAtual.forma_pagamento === 'PIX') mostrarStep('step2-pix');
+            else mostrarStep('step2-dinheiro');
+        }
+        function voltarEntrega() { mostrarStep('step3-entrega'); document.getElementById('modal-titulo').innerText = 'Dados de Entrega'; }
+
+        function fecharModal() {
+            document.getElementById('modalCompra').style.display = 'none';
+            document.querySelectorAll('.modal-step').forEach(el => el.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+            turnoSelecionado = '';
+            pedidoAtual = {};
+            document.getElementById('comprovante').value = '';
+            document.getElementById('turno-manha').classList.remove('active');
+            document.getElementById('turno-tarde').classList.remove('active');
+        }
+
+        document.getElementById('modalCompra').addEventListener('click', function(e) {
+            if (e.target === this) fecharModal();
+        });
+    </script>
+</body>
+</html>

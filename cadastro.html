@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Fazenda São Bento</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #030404; color: #e8eaed; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .box-container { background-color: #0e1012; border: 1px solid #2d0b0b; border-radius: 8px; padding: 30px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h3 { font-size: 18px; color: #fff; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 11px; color: #80868b; font-weight: bold; text-transform: uppercase; }
+        .form-control { background-color: #121416; border: 1px solid #1c1e22; border-radius: 4px; padding: 10px; color: white; font-size: 13px; outline: none; }
+        .form-control:focus { border-color: #b31010; }
+        .btn-submit { width: 100%; background-color: #b31010; color: white; border: none; padding: 11px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.15s; margin-top: 10px; }
+        .btn-submit:hover { background-color: #d91414; }
+        .link-footer { font-size: 12px; color: #80868b; text-align: center; display: block; margin-top: 20px; text-decoration: none; }
+        .link-footer a { color: #b31010; font-weight: bold; text-decoration: none; cursor: pointer; }
+        .link-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="box-container">
+        <h3>Criar Nova Conta</h3>
+        <form action="/cadastro" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" name="nome" class="form-control" required placeholder="Ex: João Silva">
+            </div>
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" name="email" class="form-control" required placeholder="Ex: joao@email.com">
+            </div>
+            <div class="form-group">
+                <label>Série Escolar</label>
+                <input type="text" name="serie" class="form-control" required placeholder="Ex: 1º Ano A">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" name="senha" class="form-control" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>Foto de Perfil (Opcional)</label>
+                <input type="file" name="foto" class="form-control" accept="image/*">
+            </div>
+            <button type="submit" class="btn-submit">Concluir Cadastro</button>
+        </form>
+        <div class="link-footer">
+            Já tem uma conta? <a onclick="window.location.href='/'">Fazer Login</a>
+        </div>
+    </div>
+
+</body>
+</html>
