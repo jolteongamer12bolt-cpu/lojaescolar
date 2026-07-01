@@ -1,17 +1,29 @@
+import logging
 import os
 import sqlite3
+from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from datetime import datetime
 
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = str(BASE_DIR / 'usuarios.db')
+
 app = Flask(__name__)
 app.secret_key = 'chave_secreta_fazenda_sao_bento'
+app.logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
+if not app.logger.handlers:
+    app.logger.addHandler(handler)
 
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+UPLOAD_FOLDER = BASE_DIR / 'static' / 'uploads'
+app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def inicializar_banco():
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     cursor.execute('''
@@ -83,7 +95,7 @@ def loja():
     is_admin = 0
 
     if 'usuario_id' in session:
-        conn = sqlite3.connect('usuarios.db')
+        conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         user_db = conn.execute('SELECT * FROM usuarios WHERE id = ?', (session['usuario_id'],)).fetchone()
         conn.close()
@@ -104,13 +116,34 @@ def loja():
                 caminho_foto = url_for('static', filename=f'uploads/{user_db["foto"]}')
                 usuario_avatar = f'<img src="{caminho_foto}">'
 
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     produtos_db = conn.execute('SELECT * FROM produtos ORDER BY categoria, id').fetchall()
     conn.close()
 
     lanches = [p for p in produtos_db if p['categoria'] == 'Lanches']
     contas_jogos = [p for p in produtos_db if p['categoria'] == 'Contas de Jogos']
+
+    def montar_cards(produtos):
+        cards = []
+        for produto in produtos:
+            nome_seguro = str(produto['nome']).replace("'", "\\'")
+            descricao = str(produto['descricao'] or '').strip()
+            cards.append(f"""
+            <div class=\"product-card\">
+                <div style=\"font-size: 44px; margin-bottom: 8px;\">🧃</div>
+                <h4 style=\"font-size: 13px; color: #fff; margin-bottom: 6px;\">{produto['nome']}</h4>
+                <p style=\"color: #80868b; font-size: 11px; margin-bottom: 8px;\">{descricao}</p>
+                <div class=\"product-price\">R$ {produto['preco']:.2f}</div>
+                <button class=\"btn-buy\" onclick=\"iniciarCompra({produto['id']}, '{nome_seguro}', '{produto['preco']:.2f}')\">Comprar</button>
+            </div>
+            """)
+        return ''.join(cards)
+
+    lista_produtos = montar_cards(lanches + contas_jogos)
+    lista_chatbot = """
+    <p style=\"color: #80868b; font-size: 12px;\">Envie sua dúvida e eu ajudo com seus pedidos.</p>
+    """
 
     if logado:
         painel_cadastro_login = f"""
@@ -150,9 +183,16 @@ def loja():
                            usuario_avatar=usuario_avatar,
                            lanches=lanches,
                            contas_jogos=contas_jogos,
+                           lista_produtos=lista_produtos,
+                           lista_chatbot=lista_chatbot,
                            painel_cadastro_login=painel_cadastro_login,
                            menu_sair=menu_sair,
                            is_admin=is_admin)
+
+@app.errorhandler(Exception)
+def handle_unhandled_exception(e):
+    app.logger.exception('Unhandled exception on request')
+    return render_template('error.html', error=e), 500
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -172,7 +212,7 @@ def cadastro():
         foto.save(os.path.join(app.config['UPLOAD_FOLDER'], nome_foto))
 
     try:
-        conn = sqlite3.connect('usuarios.db')
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO usuarios (nome, email, serie, senha, foto) 
@@ -194,7 +234,7 @@ def login():
     email = request.form.get('email', '').strip()
     senha = request.form.get('senha', '')
 
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     usuario = cursor.execute('SELECT * FROM usuarios WHERE email = ? AND senha = ?', (email, senha)).fetchone()
@@ -218,7 +258,7 @@ def admin():
     if 'usuario_id' not in session:
         return redirect(url_for('loja'))
     
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     user = conn.execute('SELECT is_admin FROM usuarios WHERE id = ?', (session['usuario_id'],)).fetchone()
     
@@ -239,7 +279,7 @@ def admin():
 def entregar(pedido_id):
     if 'usuario_id' not in session:
         return redirect(url_for('loja'))
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('UPDATE pedidos SET entregue = 1 WHERE id = ?', (pedido_id,))
     conn.commit()
@@ -253,7 +293,7 @@ def perfil():
     if 'usuario_id' not in session:
         return redirect(url_for('loja'))
     
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     usuario = conn.execute('SELECT * FROM usuarios WHERE id = ?', (session['usuario_id'],)).fetchone()
     
@@ -287,7 +327,7 @@ def amizades():
     if 'usuario_id' not in session:
         return redirect(url_for('loja'))
     
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     
     pedidos_pendentes = conn.execute('''
@@ -320,7 +360,7 @@ def enviar_pedido_amizade():
     if not amigo_id or int(amigo_id) == session['usuario_id']:
         return "<script>alert('ID inválido!'); window.location.href='/amizades';</script>"
     
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     cursor.execute('''
@@ -347,7 +387,7 @@ def aceitar_amizade(amizade_id):
     if 'usuario_id' not in session:
         return redirect(url_for('loja'))
     
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('UPDATE amizades SET status = "aceito" WHERE id = ? AND destinatario_id = ?', 
                    (amizade_id, session['usuario_id']))
@@ -360,7 +400,7 @@ def recusar_amizade(amizade_id):
     if 'usuario_id' not in session:
         return redirect(url_for('loja'))
     
-    conn = sqlite3.connect('usuarios.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('DELETE FROM amizades WHERE id = ? AND destinatario_id = ?', 
                    (amizade_id, session['usuario_id']))
@@ -368,5 +408,49 @@ def recusar_amizade(amizade_id):
     conn.close()
     return redirect(url_for('amizades'))
 
+@app.route('/finalizar_pedido', methods=['POST'])
+def finalizar_pedido():
+    produto_nome = request.form.get('produto_nome', '').strip()
+    produto_preco = request.form.get('produto_preco', '0').strip()
+    forma_pagamento = request.form.get('forma_pagamento', '').strip()
+    nome_aluno = request.form.get('nome_aluno', '').strip()
+    serie = request.form.get('serie', '').strip()
+    sala = request.form.get('sala', '').strip()
+    turno = request.form.get('turno', '').strip()
+
+    comprovante = request.files.get('comprovante')
+    nome_comprovante = None
+    if comprovante and comprovante.filename:
+        extensao = comprovante.filename.rsplit('.', 1)[-1].lower()
+        nome_comprovante = f"pedido_{datetime.now().strftime('%Y%m%d%H%M%S')}.{extensao}"
+        comprovante.save(os.path.join(app.config['UPLOAD_FOLDER'], nome_comprovante))
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO pedidos (usuario_id, produto_nome, produto_preco, forma_pagamento, comprovante, nome_aluno, serie, sala, turno, entregue)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+        ''', (session.get('usuario_id'), produto_nome, float(produto_preco), forma_pagamento, nome_comprovante, nome_aluno, serie, sala, turno))
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            'sucesso': True,
+            'mensagem': 'Pedido registrado com sucesso.',
+            'resumo': {
+                'produto': produto_nome,
+                'pagamento': forma_pagamento,
+                'nome': nome_aluno,
+                'serie': serie,
+                'sala': sala,
+                'turno': turno,
+            }
+        })
+    except Exception as exc:
+        app.logger.exception('Erro ao salvar pedido')
+        return jsonify({'sucesso': False, 'mensagem': f'Erro ao salvar pedido: {exc}'}), 500
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5001)))
